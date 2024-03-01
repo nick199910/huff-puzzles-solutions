@@ -1,0 +1,116 @@
+
+/** 
+ *  MAX_OF_ARRAY HUFF EXERCISE
+ *  
+ *  In this task, Given an abi encoded array of uint256, return its maximum value. Revert if the array is empty.
+ *
+ *  NOTICE: The contract should revert when an unrecognized function is called
+ */
+
+// 数组长度(length)，已读数组长度(readed)，当前元素位置(now)，下一个元素的位置(next), 数据最大值(max)
+
+#include "./log/Console.huff"
+
+#define function maxOfArray(uint256[]) payable returns(uint256)
+
+#define macro MA() = takes(0) returns(0) {
+    0x24 calldataload // [length]
+
+    // LOG_STACK_1(0x00) 
+    
+
+    0x01 // [readed, length]
+
+    0x00 // [max, readed, length]
+
+    0x64 swap1 // [max, next, readed, length]
+
+    0x44 // [now, max, next, readed, length]
+
+    calldataload // [element, max, next, readed, length]
+
+    dup2 dup2 // [element, max, element, max, next, readed, length]
+    
+    lt 					// [element < max, element, max, next, readed, length]
+	iszero
+	updateout jumpi
+
+    pop	// [max, next, readed, length]
+
+    updateout: // [element, max, next, readed, length]
+        swap1 pop // [max, next, readed, length] 
+    
+    dup4 dup4 // [readed, length, max, next, readed, length] 
+    lt iszero 
+    array_end jumpi // [max, next, readed, length]
+
+    array_for: // [max, next, readed, length]
+  
+    
+        // ============================= 
+        dup2 calldataload // [element, max, now, readed, length]
+
+
+
+        dup2 dup2 // [element, max, element, max, now, readed, length]
+        // LOG_STACK_7(0x00) 
+      
+
+        lt 					// [element < max, element, max, now, readed, length]
+        iszero
+        updatein jumpi
+
+        pop // [max, now, readed, length]
+        // LOG_STACK_4(0x00) 
+        step_end jump
+        
+
+        updatein: // [element, max, now, readed, length]
+            swap1 pop // [max, now, readed, length] 
+
+        step_end:
+
+        // LOG_STACK_4(0x00) 
+        swap1 0x20 add // [next, max, readed, length]
+        swap2 0x01 add 		// [readed, max, next, length] fix readed
+
+        // LOG_STACK_4(0x00) 
+
+
+        swap2 // [next, max, readed, length]
+        // LOG_STACK_4(0x00) 
+
+    
+
+        swap1			// [max, next, readed, length]
+      
+        dup4 dup4 lt 		// [readed < length, max, next, read, length]
+        // LOG_STACK_5(0x00) 
+
+   
+
+        iszero
+        array_end jumpi		// [max, next, read, length]
+
+        array_for jump 
+
+
+    array_end:
+        0x00 mstore
+        0x20 0x00 return
+
+
+}
+
+#define macro MAIN() = takes(0) returns(0) {
+    0x00 calldataload 0xE0 shr
+  
+    dup1 __FUNC_SIG(maxOfArray) eq maxOfArray jumpi
+
+    // Revert if no function matches
+
+    0x00 dup1 revert
+
+    maxOfArray:
+        MA()
+}
